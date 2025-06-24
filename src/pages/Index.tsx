@@ -1,23 +1,37 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Home, DollarSign, Plus, Search } from 'lucide-react';
+import PropertyMap from '@/components/PropertyMap';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // 示範資料
+  // 示範資料 - 加入座標資訊
   const mockTenants = [
     { id: 1, name: '王小明', phone: '0912-345-678', lineUserId: 'user123' },
     { id: 2, name: '李小華', phone: '0923-456-789', lineUserId: 'user456' },
   ];
 
   const mockProperties = [
-    { id: 1, address: '台北市大安區信義路100號', landlordName: '張房東', landlordPhone: '0934-567-890', monthlyRent: 25000 },
-    { id: 2, address: '新北市板橋區中山路200號', landlordName: '林房東', landlordPhone: '0945-678-901', monthlyRent: 18000 },
+    { 
+      id: 1, 
+      address: '台北市大安區信義路100號', 
+      landlordName: '張房東', 
+      landlordPhone: '0934-567-890', 
+      monthlyRent: 25000,
+      coordinates: { lat: 25.0340, lng: 121.5645 }
+    },
+    { 
+      id: 2, 
+      address: '新北市板橋區中山路200號', 
+      landlordName: '林房東', 
+      landlordPhone: '0945-678-901', 
+      monthlyRent: 18000,
+      coordinates: { lat: 25.0280, lng: 121.5700 }
+    },
   ];
 
   const mockRents = [
@@ -80,6 +94,9 @@ const Index = () => {
           </CardContent>
         </Card>
       </div>
+      
+      {/* 物件分佈地圖 */}
+      <PropertyMap properties={mockProperties} />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
