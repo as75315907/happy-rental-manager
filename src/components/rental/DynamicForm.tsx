@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,7 @@ interface FormField {
 }
 
 interface DynamicFormProps {
-  formType: 'tenant' | 'landlord' | 'property' | 'rent';
+  formType: 'tenant' | 'landlord' | 'property' | 'rent' | 'rental';
   initialData?: any;
   onSubmit: (data: any) => void;
   onCancel: () => void;
@@ -96,6 +95,29 @@ const DynamicForm = ({ formType, initialData, onSubmit, onCancel }: DynamicFormP
         showWhen: { field: 'type', value: ['整層'] }
       },
       { key: 'facilities', label: '設備說明', type: 'textarea' as const },
+      { key: 'notes', label: '備註', type: 'textarea' as const },
+    ],
+    rental: [
+      { key: 'tenantName', label: '租客姓名', type: 'text' as const, required: true },
+      { key: 'tenantPhone', label: '租客電話', type: 'tel' as const, required: true },
+      { key: 'propertyAddress', label: '承租地址', type: 'text' as const, required: true },
+      { key: 'rent', label: '月租金', type: 'number' as const, required: true },
+      { key: 'managementFee', label: '管理費', type: 'number' as const, required: true },
+      { key: 'parkingFee', label: '車位費', type: 'number' as const },
+      { key: 'leaseStart', label: '租期開始', type: 'date' as const, required: true },
+      { key: 'leaseEnd', label: '租期結束', type: 'date' as const, required: true },
+      { key: 'paymentDate', label: '每月繳租日', type: 'number' as const, required: true, placeholder: '請輸入1-31的數字' },
+      { 
+        key: 'status', 
+        label: '租賃狀態', 
+        type: 'select' as const, 
+        required: true,
+        options: [
+          { value: '正常', label: '正常' },
+          { value: '待續約', label: '待續約' },
+          { value: '已解約', label: '已解約' },
+        ]
+      },
       { key: 'notes', label: '備註', type: 'textarea' as const },
     ],
     rent: [
@@ -179,7 +201,7 @@ const DynamicForm = ({ formType, initialData, onSubmit, onCancel }: DynamicFormP
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeUnload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
   const renderField = (field: FormField) => {
@@ -275,6 +297,7 @@ const DynamicForm = ({ formType, initialData, onSubmit, onCancel }: DynamicFormP
       tenant: '租客',
       landlord: '房東',
       property: '物件',
+      rental: '租賃物件',
       rent: '租金記錄'
     };
     return `${initialData ? '編輯' : '新增'}${titles[formType]}`;

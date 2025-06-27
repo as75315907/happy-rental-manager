@@ -16,6 +16,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showFilterForm, setShowFilterForm] = useState(false);
   const [showRentalForm, setShowRentalForm] = useState(false);
+  const [showRentForm, setShowRentForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -200,11 +201,13 @@ const Index = () => {
   const handleFormSubmit = (data: any) => {
     console.log('表單提交:', data);
     setShowRentalForm(false);
+    setShowRentForm(false);
     setEditingItem(null);
   };
 
   const handleFormCancel = () => {
     setShowRentalForm(false);
+    setShowRentForm(false);
     setEditingItem(null);
   };
 
@@ -333,7 +336,7 @@ const Index = () => {
           </Button>
           <Button onClick={() => setShowRentalForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            新增租賃記錄
+            新增租賃物件
           </Button>
         </div>
       </div>
@@ -347,7 +350,7 @@ const Index = () => {
 
       {showRentalForm && (
         <DynamicForm
-          formType="rent"
+          formType="rental"
           initialData={editingItem}
           onSubmit={handleFormSubmit}
           onCancel={handleFormCancel}
@@ -372,17 +375,29 @@ const Index = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">租金管理</h2>
-        <Button>
+        <Button onClick={() => setShowRentForm(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          新增記錄
+          新增繳租記錄
         </Button>
       </div>
+      
+      {showRentForm && (
+        <DynamicForm
+          formType="rent"
+          initialData={editingItem}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormCancel}
+        />
+      )}
       
       <DataTable
         data={mockRents}
         columns={rentColumns}
         title="租金記錄"
-        onEdit={(item) => console.log('編輯租金記錄:', item)}
+        onEdit={(item) => {
+          setEditingItem(item);
+          setShowRentForm(true);
+        }}
         onDelete={(item) => console.log('刪除租金記錄:', item)}
         onBulkAction={(items, action) => console.log('批次操作:', items, action)}
       />
