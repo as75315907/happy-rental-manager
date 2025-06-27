@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
+import { zhTW } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 interface FormField {
@@ -158,10 +160,23 @@ const DynamicForm = ({ formType, initialData, onSubmit, onCancel }: DynamicFormP
   };
 
   const handleInputChange = (key: string, value: any) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      [key]: value
-    }));
+    setFormData((prev: any) => {
+      const newData = {
+        ...prev,
+        [key]: value
+      };
+      
+      // 如果是租期開始日，自動計算結束日（一年後的前一天）
+      if (key === 'leaseStart' && value && formType === 'rental') {
+        const startDate = new Date(value);
+        const endDate = new Date(startDate);
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        endDate.setDate(endDate.getDate() - 1); // 減一天
+        newData.leaseEnd = endDate;
+      }
+      
+      return newData;
+    });
     setHasUnsavedChanges(true);
   };
 
@@ -178,7 +193,13 @@ const DynamicForm = ({ formType, initialData, onSubmit, onCancel }: DynamicFormP
       return;
     }
     
-    onSubmit(formData);
+    // 為新增項目生成 ID
+    const submitData = {
+      ...formData,
+      id: initialData?.id || Date.now()
+    };
+    
+    onSubmit(submitData);
     setHasUnsavedChanges(false);
   };
 
@@ -265,7 +286,7 @@ const DynamicForm = ({ formType, initialData, onSubmit, onCancel }: DynamicFormP
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData[field.key] ? format(new Date(formData[field.key]), "yyyy-MM-dd") : `選擇${field.label}`}
+                {formData[field.key] ? format(new Date(formData[field.key]), "yyyy年MM月dd日", { locale: zhTW }) : `選擇${field.label}`}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -275,6 +296,7 @@ const DynamicForm = ({ formType, initialData, onSubmit, onCancel }: DynamicFormP
                 onSelect={(date) => date && handleInputChange(field.key, date)}
                 initialFocus
                 className="pointer-events-auto"
+                locale={zhTW}
               />
             </PopoverContent>
           </Popover>

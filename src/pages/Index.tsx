@@ -21,14 +21,8 @@ const Index = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    toast.success('已安全登出');
-    navigate('/login');
-  };
-
-  // 整合的租賃記錄數據
-  const mockRentalRecords = [
+  // 使用 state 來管理列表數據
+  const [rentalRecords, setRentalRecords] = useState([
     {
       id: 1,
       tenantName: '王小明',
@@ -39,7 +33,7 @@ const Index = () => {
       rent: 25000,
       leaseStart: '2024-01-01',
       leaseEnd: '2024-12-31',
-      paymentDate: 5, // 每月5號繳費
+      paymentDate: 5,
       status: '正常'
     },
     {
@@ -52,7 +46,7 @@ const Index = () => {
       rent: 18000,
       leaseStart: '2023-12-01',
       leaseEnd: '2024-11-30',
-      paymentDate: 10, // 每月10號繳費
+      paymentDate: 10,
       status: '正常'
     },
     {
@@ -65,10 +59,39 @@ const Index = () => {
       rent: 22000,
       leaseStart: '2024-03-01',
       leaseEnd: '2025-02-28',
-      paymentDate: 15, // 每月15號繳費
+      paymentDate: 15,
       status: '正常'
     }
-  ];
+  ]);
+
+  const [rentRecords, setRentRecords] = useState([
+    { 
+      id: 1, 
+      tenantName: '王小明', 
+      propertyAddress: '台北市大安區信義路100號', 
+      month: '2024-01', 
+      amount: 25000, 
+      status: '已繳費',
+      paidDate: '2024-01-05',
+      paymentMethod: '銀行轉帳'
+    },
+    { 
+      id: 2, 
+      tenantName: '李小華', 
+      propertyAddress: '新北市板橋區中山路200號', 
+      month: '2024-01', 
+      amount: 18000, 
+      status: '待繳費',
+      paidDate: null,
+      paymentMethod: null
+    },
+  ]);
+
+  const handleLogout = () => {
+    logout();
+    toast.success('已安全登出');
+    navigate('/login');
+  };
 
   const mockProperties = [
     { 
@@ -98,29 +121,6 @@ const Index = () => {
       hasParking: false,
       hasBalcony: false,
       coordinates: { lat: 25.0280, lng: 121.5700 }
-    },
-  ];
-
-  const mockRents = [
-    { 
-      id: 1, 
-      tenantName: '王小明', 
-      propertyAddress: '台北市大安區信義路100號', 
-      month: '2024-01', 
-      amount: 25000, 
-      status: '已繳費',
-      paidDate: '2024-01-05',
-      paymentMethod: '銀行轉帳'
-    },
-    { 
-      id: 2, 
-      tenantName: '李小華', 
-      propertyAddress: '新北市板橋區中山路200號', 
-      month: '2024-01', 
-      amount: 18000, 
-      status: '待繳費',
-      paidDate: null,
-      paymentMethod: null
     },
   ];
 
@@ -200,8 +200,37 @@ const Index = () => {
 
   const handleFormSubmit = (data: any) => {
     console.log('表單提交:', data);
-    setShowRentalForm(false);
-    setShowRentForm(false);
+    
+    if (showRentalForm) {
+      if (editingItem) {
+        // 編輯現有記錄
+        setRentalRecords(prev => prev.map(item => 
+          item.id === editingItem.id ? { ...data, id: editingItem.id } : item
+        ));
+        toast.success('租賃物件已更新');
+      } else {
+        // 新增記錄
+        setRentalRecords(prev => [...prev, { ...data, id: Date.now() }]);
+        toast.success('租賃物件已新增');
+      }
+      setShowRentalForm(false);
+    }
+    
+    if (showRentForm) {
+      if (editingItem) {
+        // 編輯現有記錄
+        setRentRecords(prev => prev.map(item => 
+          item.id === editingItem.id ? { ...data, id: editingItem.id } : item
+        ));
+        toast.success('租金記錄已更新');
+      } else {
+        // 新增記錄
+        setRentRecords(prev => [...prev, { ...data, id: Date.now() }]);
+        toast.success('租金記錄已新增');
+      }
+      setShowRentForm(false);
+    }
+    
     setEditingItem(null);
   };
 
@@ -209,6 +238,57 @@ const Index = () => {
     setShowRentalForm(false);
     setShowRentForm(false);
     setEditingItem(null);
+  };
+
+  const handleEditRental = (item: any) => {
+    setEditingItem(item);
+    setShowRentalForm(true);
+  };
+
+  const handleEditRent = (item: any) => {
+    // 從租賃記錄中找到對應的租客和物件資訊
+    const rentalInfo = rentalRecords.find(rental => 
+      rental.tenantName === item.tenantName && 
+      rental.propertyAddress === item.propertyAddress
+    );
+    
+    const editData = {
+      ...item,
+      tenantId: rentalInfo?.tenantName || item.tenantName,
+      propertyId: rentalInfo?.propertyAddress || item.propertyAddress,
+    };
+    
+    setEditingItem(editData);
+    setShowRentForm(true);
+  };
+
+  const handleDeleteRental = (item: any) => {
+    if (confirm('確定要刪除這筆租賃記錄嗎？')) {
+      setRentalRecords(prev => prev.filter(record => record.id !== item.id));
+      toast.success('租賃記錄已刪除');
+    }
+  };
+
+  const handleDeleteRent = (item: any) => {
+    if (confirm('確定要刪除這筆租金記錄嗎？')) {
+      setRentRecords(prev => prev.filter(record => record.id !== item.id));
+      toast.success('租金記錄已刪除');
+    }
+  };
+
+  const handleBulkAction = (selectedItems: any[], action: string, type: 'rental' | 'rent') => {
+    if (action === 'delete') {
+      if (confirm(`確定要刪除選中的 ${selectedItems.length} 筆記錄嗎？`)) {
+        if (type === 'rental') {
+          const selectedIds = selectedItems.map(item => item.id);
+          setRentalRecords(prev => prev.filter(record => !selectedIds.includes(record.id)));
+        } else {
+          const selectedIds = selectedItems.map(item => item.id);
+          setRentRecords(prev => prev.filter(record => !selectedIds.includes(record.id)));
+        }
+        toast.success(`已刪除 ${selectedItems.length} 筆記錄`);
+      }
+    }
   };
 
   const renderDashboard = () => (
@@ -222,7 +302,7 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-700">{mockRentalRecords.length}</div>
+            <div className="text-2xl font-bold text-blue-700">{rentalRecords.length}</div>
             <p className="text-xs text-blue-500">活躍租客</p>
           </CardContent>
         </Card>
@@ -277,7 +357,7 @@ const Index = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {mockRents.map(rent => (
+              {rentRecords.map(rent => (
                 <div key={rent.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded">
                   <div>
                     <p className="font-medium">{rent.tenantName}</p>
@@ -358,15 +438,12 @@ const Index = () => {
       )}
       
       <DataTable
-        data={mockRentalRecords}
+        data={rentalRecords}
         columns={rentalColumns}
         title="租賃記錄列表"
-        onEdit={(item) => {
-          setEditingItem(item);
-          setShowRentalForm(true);
-        }}
-        onDelete={(item) => console.log('刪除租賃記錄:', item)}
-        onBulkAction={(items, action) => console.log('批次操作:', items, action)}
+        onEdit={handleEditRental}
+        onDelete={handleDeleteRental}
+        onBulkAction={(items, action) => handleBulkAction(items, action, 'rental')}
       />
     </div>
   );
@@ -391,15 +468,12 @@ const Index = () => {
       )}
       
       <DataTable
-        data={mockRents}
+        data={rentRecords}
         columns={rentColumns}
         title="租金記錄"
-        onEdit={(item) => {
-          setEditingItem(item);
-          setShowRentForm(true);
-        }}
-        onDelete={(item) => console.log('刪除租金記錄:', item)}
-        onBulkAction={(items, action) => console.log('批次操作:', items, action)}
+        onEdit={handleEditRent}
+        onDelete={handleDeleteRent}
+        onBulkAction={(items, action) => handleBulkAction(items, action, 'rent')}
       />
     </div>
   );
