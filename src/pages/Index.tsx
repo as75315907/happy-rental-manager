@@ -347,7 +347,7 @@ const Index = () => {
 
       {showRentalForm && (
         <DynamicForm
-          formType="rental"
+          formType="rent"
           initialData={editingItem}
           onSubmit={handleFormSubmit}
           onCancel={handleFormCancel}
