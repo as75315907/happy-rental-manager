@@ -1,15 +1,17 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Home, DollarSign, Plus, Search, Settings } from 'lucide-react';
+import { User, Home, DollarSign, Plus, Search, Settings, LogOut } from 'lucide-react';
 import PropertyMap from '@/components/PropertyMap';
 import DataTable from '@/components/rental/DataTable';
 import FilterForm from '@/components/rental/FilterForm';
 import DynamicForm from '@/components/rental/DynamicForm';
 import ThemeToggle from '@/components/rental/ThemeToggle';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -17,8 +19,15 @@ const Index = () => {
   const [showTenantForm, setShowTenantForm] = useState(false);
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
-  // 示範資料 - 加入座標資訊
+  const handleLogout = () => {
+    logout();
+    toast.success('已安全登出');
+    navigate('/login');
+  };
+
   const mockTenants = [
     { 
       id: 1, 
@@ -98,7 +107,6 @@ const Index = () => {
     },
   ];
 
-  // 表格欄位配置
   const tenantColumns = [
     { key: 'name', title: '姓名', sortable: true, editable: true },
     { key: 'phone', title: '電話', sortable: true, editable: true },
@@ -361,7 +369,11 @@ const Index = () => {
                 <Settings className="h-4 w-4 mr-2" />
                 設定
               </Button>
-              <div className="text-sm text-muted-foreground">歡迎使用多物件租賃管理平台</div>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                登出
+              </Button>
+              <div className="text-sm text-muted-foreground">管理員後台</div>
             </div>
           </div>
         </div>
