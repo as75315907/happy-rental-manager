@@ -36,6 +36,7 @@ interface Column {
   title: string;
   sortable?: boolean;
   editable?: boolean;
+  render?: (item: any) => React.ReactNode;
 }
 
 interface DataTableProps {
@@ -209,7 +210,9 @@ const DataTable = ({ data, columns, title, onEdit, onDelete, onBulkAction }: Dat
                 </TableCell>
                 {columns.map((column) => (
                   <TableCell key={column.key}>
-                    {editingCell?.rowIndex === rowIndex && editingCell?.columnKey === column.key && column.editable ? (
+                    {column.render ? (
+                      column.render(item)
+                    ) : editingCell?.rowIndex === rowIndex && editingCell?.columnKey === column.key && column.editable ? (
                       <Input
                         defaultValue={item[column.key]}
                         onBlur={() => setEditingCell(null)}

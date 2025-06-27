@@ -15,8 +15,7 @@ import { toast } from 'sonner';
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showFilterForm, setShowFilterForm] = useState(false);
-  const [showTenantForm, setShowTenantForm] = useState(false);
-  const [showPropertyForm, setShowPropertyForm] = useState(false);
+  const [showRentalForm, setShowRentalForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -27,29 +26,47 @@ const Index = () => {
     navigate('/login');
   };
 
-  const mockTenants = [
-    { 
-      id: 1, 
-      name: '王小明', 
-      phone: '0912-345-678', 
-      email: 'wang@email.com',
-      lineUserId: 'user123',
-      idNumber: 'A123456789',
-      occupation: '工程師',
-      emergencyContact: '王媽媽',
-      emergencyPhone: '0987-654-321'
+  // 整合的租賃記錄數據
+  const mockRentalRecords = [
+    {
+      id: 1,
+      tenantName: '王小明',
+      tenantPhone: '0912-345-678',
+      propertyAddress: '台北市大安區信義路100號',
+      managementFee: 2000,
+      parkingFee: 3000,
+      rent: 25000,
+      leaseStart: '2024-01-01',
+      leaseEnd: '2024-12-31',
+      paymentDate: 5, // 每月5號繳費
+      status: '正常'
     },
-    { 
-      id: 2, 
-      name: '李小華', 
-      phone: '0923-456-789', 
-      email: 'li@email.com',
-      lineUserId: 'user456',
-      idNumber: 'B987654321',
-      occupation: '設計師',
-      emergencyContact: '李爸爸',
-      emergencyPhone: '0976-543-210'
+    {
+      id: 2,
+      tenantName: '李小華',
+      tenantPhone: '0923-456-789',
+      propertyAddress: '新北市板橋區中山路200號',
+      managementFee: 1500,
+      parkingFee: 0,
+      rent: 18000,
+      leaseStart: '2023-12-01',
+      leaseEnd: '2024-11-30',
+      paymentDate: 10, // 每月10號繳費
+      status: '正常'
     },
+    {
+      id: 3,
+      tenantName: '張大明',
+      tenantPhone: '0934-567-890',
+      propertyAddress: '台中市西屯區台灣大道300號',
+      managementFee: 1800,
+      parkingFee: 2500,
+      rent: 22000,
+      leaseStart: '2024-03-01',
+      leaseEnd: '2025-02-28',
+      paymentDate: 15, // 每月15號繳費
+      status: '正常'
+    }
   ];
 
   const mockProperties = [
@@ -106,6 +123,58 @@ const Index = () => {
     },
   ];
 
+  // 租賃記錄的欄位定義
+  const rentalColumns = [
+    { key: 'tenantName', title: '租客姓名', sortable: true },
+    { key: 'tenantPhone', title: '租客電話', sortable: true },
+    { key: 'propertyAddress', title: '承租地址', sortable: true },
+    { 
+      key: 'propertyDetails', 
+      title: '費用明細', 
+      sortable: false,
+      render: (item: any) => (
+        <div className="space-y-1 text-sm">
+          <div>租金: NT$ {item.rent?.toLocaleString()}</div>
+          <div>管理費: NT$ {item.managementFee?.toLocaleString()}</div>
+          {item.parkingFee > 0 && <div>車位費: NT$ {item.parkingFee?.toLocaleString()}</div>}
+          <div className="font-medium text-blue-600">
+            總計: NT$ {(item.rent + item.managementFee + item.parkingFee)?.toLocaleString()}
+          </div>
+        </div>
+      )
+    },
+    { 
+      key: 'leasePeriod', 
+      title: '租期', 
+      sortable: true,
+      render: (item: any) => (
+        <div className="text-sm">
+          <div>{item.leaseStart}</div>
+          <div>至</div>
+          <div>{item.leaseEnd}</div>
+        </div>
+      )
+    },
+    { 
+      key: 'paymentDate', 
+      title: '繳租日', 
+      sortable: true,
+      render: (item: any) => `每月 ${item.paymentDate} 號`
+    },
+    { 
+      key: 'status', 
+      title: '狀態', 
+      sortable: true,
+      render: (item: any) => (
+        <span className={`px-2 py-1 rounded text-xs ${
+          item.status === '正常' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {item.status}
+        </span>
+      )
+    }
+  ];
+
   const tenantColumns = [
     { key: 'name', title: '姓名', sortable: true, editable: true },
     { key: 'phone', title: '電話', sortable: true, editable: true },
@@ -130,14 +199,12 @@ const Index = () => {
 
   const handleFormSubmit = (data: any) => {
     console.log('表單提交:', data);
-    setShowTenantForm(false);
-    setShowPropertyForm(false);
+    setShowRentalForm(false);
     setEditingItem(null);
   };
 
   const handleFormCancel = () => {
-    setShowTenantForm(false);
-    setShowPropertyForm(false);
+    setShowRentalForm(false);
     setEditingItem(null);
   };
 
@@ -152,7 +219,7 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-700">{mockTenants.length}</div>
+            <div className="text-2xl font-bold text-blue-700">{mockRentalRecords.length}</div>
             <p className="text-xs text-blue-500">活躍租客</p>
           </CardContent>
         </Card>
@@ -264,6 +331,10 @@ const Index = () => {
             <Search className="h-4 w-4 mr-2" />
             進階篩選
           </Button>
+          <Button onClick={() => setShowRentalForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            新增租賃記錄
+          </Button>
         </div>
       </div>
       
@@ -273,81 +344,27 @@ const Index = () => {
           onClearFilters={() => console.log('清除篩選')}
         />
       )}
+
+      {showRentalForm && (
+        <DynamicForm
+          formType="rental"
+          initialData={editingItem}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormCancel}
+        />
+      )}
       
-      <Tabs defaultValue="tenants" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="tenants" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            租客管理
-          </TabsTrigger>
-          <TabsTrigger value="properties" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            物件管理
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="tenants" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">租客列表</h3>
-            <Button onClick={() => setShowTenantForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              新增租客
-            </Button>
-          </div>
-          
-          {showTenantForm && (
-            <DynamicForm
-              formType="tenant"
-              initialData={editingItem}
-              onSubmit={handleFormSubmit}
-              onCancel={handleFormCancel}
-            />
-          )}
-          
-          <DataTable
-            data={mockTenants}
-            columns={tenantColumns}
-            title="租客資料"
-            onEdit={(item) => {
-              setEditingItem(item);
-              setShowTenantForm(true);
-            }}
-            onDelete={(item) => console.log('刪除租客:', item)}
-            onBulkAction={(items, action) => console.log('批次操作:', items, action)}
-          />
-        </TabsContent>
-        
-        <TabsContent value="properties" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">物件列表</h3>
-            <Button onClick={() => setShowPropertyForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              新增物件
-            </Button>
-          </div>
-          
-          {showPropertyForm && (
-            <DynamicForm
-              formType="property"
-              initialData={editingItem}
-              onSubmit={handleFormSubmit}
-              onCancel={handleFormCancel}
-            />
-          )}
-          
-          <DataTable
-            data={mockProperties}
-            columns={propertyColumns}
-            title="物件資料"
-            onEdit={(item) => {
-              setEditingItem(item);
-              setShowPropertyForm(true);
-            }}
-            onDelete={(item) => console.log('刪除物件:', item)}
-            onBulkAction={(items, action) => console.log('批次操作:', items, action)}
-          />
-        </TabsContent>
-      </Tabs>
+      <DataTable
+        data={mockRentalRecords}
+        columns={rentalColumns}
+        title="租賃記錄列表"
+        onEdit={(item) => {
+          setEditingItem(item);
+          setShowRentalForm(true);
+        }}
+        onDelete={(item) => console.log('刪除租賃記錄:', item)}
+        onBulkAction={(items, action) => console.log('批次操作:', items, action)}
+      />
     </div>
   );
 
