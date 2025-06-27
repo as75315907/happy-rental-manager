@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { User, Home, DollarSign, Plus, Search, Settings, LogOut } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User, Home, DollarSign, Plus, Search, Settings, LogOut, Users, Building } from 'lucide-react';
 import PropertyMap from '@/components/PropertyMap';
 import DataTable from '@/components/rental/DataTable';
 import FilterForm from '@/components/rental/FilterForm';
@@ -253,10 +252,10 @@ const Index = () => {
     </div>
   );
 
-  const renderTenants = () => (
+  const renderManagement = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">租客管理</h2>
+        <h2 className="text-2xl font-bold">租賃管理</h2>
         <div className="flex gap-2">
           <Button 
             variant="outline" 
@@ -264,10 +263,6 @@ const Index = () => {
           >
             <Search className="h-4 w-4 mr-2" />
             進階篩選
-          </Button>
-          <Button onClick={() => setShowTenantForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            新增租客
           </Button>
         </div>
       </div>
@@ -279,59 +274,80 @@ const Index = () => {
         />
       )}
       
-      {showTenantForm && (
-        <DynamicForm
-          formType="tenant"
-          initialData={editingItem}
-          onSubmit={handleFormSubmit}
-          onCancel={handleFormCancel}
-        />
-      )}
-      
-      <DataTable
-        data={mockTenants}
-        columns={tenantColumns}
-        title="租客列表"
-        onEdit={(item) => {
-          setEditingItem(item);
-          setShowTenantForm(true);
-        }}
-        onDelete={(item) => console.log('刪除租客:', item)}
-        onBulkAction={(items, action) => console.log('批次操作:', items, action)}
-      />
-    </div>
-  );
-
-  const renderProperties = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">物件管理</h2>
-        <Button onClick={() => setShowPropertyForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          新增物件
-        </Button>
-      </div>
-      
-      {showPropertyForm && (
-        <DynamicForm
-          formType="property"
-          initialData={editingItem}
-          onSubmit={handleFormSubmit}
-          onCancel={handleFormCancel}
-        />
-      )}
-      
-      <DataTable
-        data={mockProperties}
-        columns={propertyColumns}
-        title="物件列表"
-        onEdit={(item) => {
-          setEditingItem(item);
-          setShowPropertyForm(true);
-        }}
-        onDelete={(item) => console.log('刪除物件:', item)}
-        onBulkAction={(items, action) => console.log('批次操作:', items, action)}
-      />
+      <Tabs defaultValue="tenants" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="tenants" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            租客管理
+          </TabsTrigger>
+          <TabsTrigger value="properties" className="flex items-center gap-2">
+            <Building className="h-4 w-4" />
+            物件管理
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="tenants" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium">租客列表</h3>
+            <Button onClick={() => setShowTenantForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              新增租客
+            </Button>
+          </div>
+          
+          {showTenantForm && (
+            <DynamicForm
+              formType="tenant"
+              initialData={editingItem}
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+            />
+          )}
+          
+          <DataTable
+            data={mockTenants}
+            columns={tenantColumns}
+            title="租客資料"
+            onEdit={(item) => {
+              setEditingItem(item);
+              setShowTenantForm(true);
+            }}
+            onDelete={(item) => console.log('刪除租客:', item)}
+            onBulkAction={(items, action) => console.log('批次操作:', items, action)}
+          />
+        </TabsContent>
+        
+        <TabsContent value="properties" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium">物件列表</h3>
+            <Button onClick={() => setShowPropertyForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              新增物件
+            </Button>
+          </div>
+          
+          {showPropertyForm && (
+            <DynamicForm
+              formType="property"
+              initialData={editingItem}
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+            />
+          )}
+          
+          <DataTable
+            data={mockProperties}
+            columns={propertyColumns}
+            title="物件資料"
+            onEdit={(item) => {
+              setEditingItem(item);
+              setShowPropertyForm(true);
+            }}
+            onDelete={(item) => console.log('刪除物件:', item)}
+            onBulkAction={(items, action) => console.log('批次操作:', items, action)}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 
@@ -394,22 +410,13 @@ const Index = () => {
                 儀表板
               </button>
               <button
-                onClick={() => setActiveTab('tenants')}
+                onClick={() => setActiveTab('management')}
                 className={`w-full flex items-center gap-3 px-4 py-2 text-left rounded-lg transition-colors ${
-                  activeTab === 'tenants' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                  activeTab === 'management' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
                 }`}
               >
                 <User className="h-5 w-5" />
-                租客管理
-              </button>
-              <button
-                onClick={() => setActiveTab('properties')}
-                className={`w-full flex items-center gap-3 px-4 py-2 text-left rounded-lg transition-colors ${
-                  activeTab === 'properties' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
-                }`}
-              >
-                <Home className="h-5 w-5" />
-                物件管理
+                租賃管理
               </button>
               <button
                 onClick={() => setActiveTab('rents')}
@@ -427,8 +434,7 @@ const Index = () => {
         {/* 主要內容區域 */}
         <div className="flex-1 p-8">
           {activeTab === 'dashboard' && renderDashboard()}
-          {activeTab === 'tenants' && renderTenants()}
-          {activeTab === 'properties' && renderProperties()}
+          {activeTab === 'management' && renderManagement()}
           {activeTab === 'rents' && renderRents()}
         </div>
       </div>
